@@ -65,7 +65,8 @@ form.setup label{display:grid;gap:4px;font-size:14px;color:var(--mute)}
 <body>
 <header class="band top"><div class="wrap">
   <h1>Vendor Spec officer hub</h1>
-  <p class="sub">Read-only view of the officers' Google Sheet. Make changes in the sheet and this page picks them up. Members use the <a href="./">raid groups page</a>.</p>
+  <p class="sub">Read-only view of the officers' Google Sheet. Make changes in the sheet, then press Refresh (sheet edits take up to 5 minutes to show). Members use the <a href="./">raid groups page</a>.</p>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px"><button class="btn" type="button" id="refresh">Refresh</button><a class="btn ghost editlink" hidden target="_blank" rel="noopener" style="background:transparent;color:#f3ece6;border-color:#6b5f5b">Edit in Google Sheets</a><span id="updated" style="color:#cfc5be;font-size:14px"></span></div>
   <div class="figs" id="figs"></div>
 </div></header>
 <nav class="bar" aria-label="Sections"><div class="tabs" id="tabs">
@@ -197,16 +198,22 @@ function all(){figs();roster();leads();soc();stats();for(const a of document.que
 async function load(){if(!L.r){status("Not connected to the officers' sheet on this device yet. Open the setup link an officer sent you, or paste one published CSV link of the Officers sheet in the Quick setup box below.");return}status("Loading the officers' sheet…");
   try{const [r,s,p]=await Promise.all([["Roster",L.r],["Socials",L.s],["Plan",L.p]].map(([n,u])=>u?fetch(u,{cache:"no-store"}).then(x=>{if(!x.ok)throw new Error(n+" tab ("+x.status+")");return x.text()}).then(t=>{if(/^\s*</.test(t))throw new Error(n+" tab: that link is a web page, not a CSV link");return t}).catch(e=>{throw new Error(e.message.includes("tab")?e.message:n+" tab: "+e.message)}):Promise.resolve("")));
     players=csv(r).rows.filter(x=>x.Character);socials=s?csv(s).rows.filter(x=>x.Character):[];const pl=p?csv(p):{head:[],rows:[]};plan=[pl.head[0]==="Notes"?"":pl.head.join(","),...pl.rows.map(x=>x.Notes??Object.values(x).join(","))].join("\n").trim();
-    status(players.length?"":"The Roster link loaded but has no rows. Check it's the Roster tab's CSV link.");all()}
+    status(players.length?"":"The Roster link loaded but has no rows. Check it's the Roster tab's CSV link.");all();$("updated").textContent="Updated "+new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}
   catch(e){status("Couldn't load the sheet: "+e.message+". Open 'Sheet links' and paste the published CSV link again.")}}
 ["q","fRole","fStatus"].forEach(i=>$(i).addEventListener("input",roster));$("sq").addEventListener("input",soc);
 $("chips").addEventListener("click",e=>{const b=e.target.closest("button");if(b){actF=b.dataset.a;soc()}});
 $("copyBtn").addEventListener("click",async()=>{const t=shownSoc().map(s=>s.Character).join("\n");try{await navigator.clipboard.writeText(t);$("copied").textContent=`Copied ${shownSoc().length} names.`}catch(e){$("copied").textContent="Copy was blocked by the browser."}});
 $("uR").value=L.r||"";$("uS").value=L.s||"";$("uP").value=L.p||"";$("uE").value=L.e||"";
 $("setup").addEventListener("submit",e=>{e.preventDefault();const k=pubKey($("uAny").value)||pubKey($("uR").value)||pubKey($("uS").value)||pubKey($("uP").value);const d=k?fromKey(k):{};L={r:csvOf($("uR").value)||d.r||"",s:csvOf($("uS").value)||d.s||"",p:csvOf($("uP").value)||d.p||"",e:$("uE").value.trim()};if(!L.r){status("Paste at least one published CSV link of the Officers sheet.");return}$("uR").value=L.r;$("uS").value=L.s;$("uP").value=L.p;$("uAny").value="";try{localStorage.setItem(KEY,JSON.stringify(L))}catch(err){}location.hash="roster";load()});
-$("forget").addEventListener("click",()=>{try{localStorage.removeItem(KEY)}catch(e){}L={};players=[];socials=[];plan="";["uR","uS","uP","uE"].forEach(i=>$(i).value="");all();status("Links removed from this browser.")});
+$("forget").addEventListener("click",()=>{try{localStorage.removeItem(KEY)}catch(e){}L={};players=[];socials=[];plan="";["uR","uS","uP","uE"].forEach(i=>$(i).value="");all();status("Custom links removed. Reload the page to use the built-in links.")});
+{const BUILTIN="2PACX-1vQSBpWTVnhOX7DTd7fl9qUE2S7Nw85y5Ex8Ldzpkd2uM8w3dnhfE5-6Qk6X0dxsYfMIuwDDrCaBCENO";
+ if(!L.r){L={...fromKey(BUILTIN),e:L.e||"https://docs.google.com/spreadsheets/d/1pTPRXZ7Zr34L4NfiiQaLd5-FnEHTBJKpgVxLR7RhLAQ/edit"};$("uR").value=L.r;$("uS").value=L.s;$("uP").value=L.p;$("uE").value=L.e}}
 {const m=location.hash.match(/^#k=(2PACX-[A-Za-z0-9_-]+)/);if(m){L={...fromKey(m[1]),e:L.e||""};try{localStorage.setItem(KEY,JSON.stringify(L))}catch(err){}history.replaceState(null,"",location.pathname+"#roster");$("uR").value=L.r;$("uS").value=L.s;$("uP").value=L.p}}
-window.addEventListener("hashchange",view);view();all();load();
+let busy=false;const reload=async()=>{if(busy)return;busy=true;$("updated").textContent="Loading…";try{await load()}finally{busy=false}};
+$("refresh").addEventListener("click",reload);
+setInterval(()=>{if(document.visibilityState==="visible")reload()},5*60*1000);
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")reload()});
+window.addEventListener("hashchange",view);view();all();reload();
 }
 </script>
 </body>
