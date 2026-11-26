@@ -69,7 +69,7 @@ form.setup label{display:grid;gap:4px;font-size:14px;color:var(--mute)}
   <div class="figs" id="figs"></div>
 </div></header>
 <nav class="bar" aria-label="Sections"><div class="tabs" id="tabs">
-  <a href="#roster">Roster</a><a href="#leads">Raid leads &amp; times</a><a href="#socials">Socials list</a><a href="#setup">Sheet links</a>
+  <a href="#roster">Roster</a><a href="#leads">Raid leads &amp; times</a><a href="#socials">Socials list</a><a href="#stats">Stats</a><a href="#setup">Sheet links</a>
 </div></nav>
 <main class="band"><div class="wrap">
   <div id="status" class="note" hidden></div>
@@ -78,6 +78,7 @@ form.setup label{display:grid;gap:4px;font-size:14px;color:var(--mute)}
     <h2>Connect the officers' sheet</h2>
     <p class="lead">Paste the "Publish to web" CSV link of each tab of the private officers' sheet. They're saved only in this browser, never in the website's code. Get them from an officer.</p>
     <form class="setup" id="setup">
+      <label>Quick setup: paste ANY one published CSV link of the Officers sheet and the other tabs are filled in for you <input id="uAny" type="url" placeholder="https://docs.google.com/spreadsheets/d/e/2PACX-…/pub?gid=0&single=true&output=csv"></label>
       <label>Roster tab CSV link <input id="uR" type="url" placeholder="https://docs.google.com/spreadsheets/d/e/…/pub?gid=…&single=true&output=csv"></label>
       <label>Socials tab CSV link <input id="uS" type="url"></label>
       <label>Plan tab CSV link <input id="uP" type="url"></label>
@@ -111,6 +112,12 @@ form.setup label{display:grid;gap:4px;font-size:14px;color:var(--mute)}
     </div>
   </section>
 
+  <section id="v-stats" hidden>
+    <h2>Survey &amp; roster stats</h2>
+    <p class="lead">Worked out live from the Roster and Socials tabs. Names are listed so you know who to talk to.</p>
+    <div class="grid2" id="statGrid"></div>
+  </section>
+
   <section id="v-socials" hidden>
     <h2>Didn't do the survey</h2>
     <p class="lead">Guild members with no survey answer (Doclove left out). Same-name alts of people who answered, and rank-2 officer alts, are marked to keep. Alts with unrelated names can't be spotted automatically.</p>
@@ -136,7 +143,7 @@ $("fRole").innerHTML+=opts(ROLES);$("fStatus").innerHTML+=opts(STAT);
 function status(t){$("status").hidden=!t;$("status").textContent=t||""}
 const num=v=>v===""||v==null?null:+v;
 function gear(g){g=num(g);if(g==null||isNaN(g))return`<span class="pill g-u">No data</span>`;const c=g>=700?"g-r":g>=550?"g-d":g>=400?"g-n":"g-u";return`<span class="pill ${c}">${g}</span>`}
-function view(){const h=location.hash.slice(1)||(L.r?"roster":"setup");for(const v of["setup","roster","leads","socials"])$("v-"+v).hidden=v!==h;for(const a of $("tabs").children){if(a.getAttribute("href")==="#"+h)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")}}
+function view(){const h=location.hash.slice(1)||(L.r?"roster":"setup");for(const v of["setup","roster","leads","socials","stats"])$("v-"+v).hidden=v!==h;for(const a of $("tabs").children){if(a.getAttribute("href")==="#"+h)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")}}
 function figs(){const act=players.filter(p=>p.Status!=="Out"),c=r=>act.filter(p=>p.Role===r||(r==="Tank"&&p.Role==="Tank / DPS")).length;
   $("figs").innerHTML=players.length?[[act.filter(p=>p.Status==="Core").length,"core raiders"],[c("Tank"),"tanks"],[c("Healer"),"healers"],[c("Melee DPS")+c("Ranged DPS"),"DPS"],[act.filter(p=>+p.Lvl<60).length,"still levelling"],[socials.filter(s=>s.Action==="Make social").length,"to make socials"]].map(([n,l])=>`<div class="fig2"><b>${n}</b><span>${l}</span></div>`).join(""):""}
 function roster(){const q=$("q").value.toLowerCase(),r=$("fRole").value,s=$("fStatus").value;
@@ -153,18 +160,52 @@ function shownSoc(){const q=$("sq").value.toLowerCase();return socials.filter(s=
 function soc(){const c={};for(const s of socials)c[s.Action]=(c[s.Action]||0)+1;
   $("chips").innerHTML=[["","All",socials.length],...ACT.map(a=>[a,a,c[a]||0])].map(([v,l,n])=>`<button type="button" data-a="${esc(v)}" aria-pressed="${v===actF}">${esc(l)} (${n})</button>`).join("");
   $("st").tBodies[0].innerHTML=shownSoc().map(s=>`<tr><td><span class="nm" style="--c:${CC[s.Class]||"#999"}">${esc(s.Character)}</span></td><td class="num">${esc(s.Lvl)}</td><td>${esc(s.Class)}</td><td>${esc(s["Guild rank"]||s.Rank)}</td><td>${esc(s.Action)}</td><td>${esc(s.Note)}</td></tr>`).join("")||`<tr><td colspan="6">No one here.</td></tr>`}
-function all(){figs();roster();leads();soc();for(const a of document.querySelectorAll(".editlink")){a.hidden=!/^https:\/\//.test(L.e||"");if(!a.hidden)a.href=L.e}}
+const GIDS={r:"0",s:"1877007379",p:"1239636147"};
+function pubKey(u){const m=String(u||"").match(/\/d\/e\/(2PACX-[A-Za-z0-9_-]+)/);return m?m[1]:""}
+function csvOf(u){u=String(u||"").trim();if(!u)return u;if(/\/pubhtml/.test(u)||!/output=csv/.test(u)){const k=pubKey(u),g=(u.match(/gid=(\d+)/)||[])[1];if(k&&g)return `https://docs.google.com/spreadsheets/d/e/${k}/pub?gid=${g}&single=true&output=csv`}return u}
+function fromKey(k){const b=`https://docs.google.com/spreadsheets/d/e/${k}/pub?gid=`;return{r:b+GIDS.r+"&single=true&output=csv",s:b+GIDS.s+"&single=true&output=csv",p:b+GIDS.p+"&single=true&output=csv"}}
+function panel(title,sub,body){return `<div class="panel"><h3>${esc(title)}</h3>${sub?`<p class="lead" style="margin:0 0 8px;font-size:14px">${esc(sub)}</p>`:""}${body}</div>`}
+function names(list){return list.length?`<p class="lead" style="margin:4px 0 8px;font-size:13.5px">${list.map(p=>esc(p.Character||p)).join(", ")}</p>`:""}
+function grp(rows,key,order){const m={};for(const p of rows){const k=(typeof key==="function"?key(p):p[key])||"—";(m[k]=m[k]||[]).push(p)}const ks=Object.keys(m).sort((a,b)=>order?(order.indexOf(a)+99*(order.indexOf(a)<0))-(order.indexOf(b)+99*(order.indexOf(b)<0)):m[b].length-m[a].length);return ks.map(k=>[k,m[k]])}
+function barsN(groups,show){const mx=Math.max(1,...groups.map(g=>g[1].length));return groups.map(([k,l])=>`<div class="hb"><span>${esc(k)}</span><i style="width:${l.length/mx*100}%"></i><b>${l.length}</b></div>${show?names(l):""}`).join("")}
+function stats(){
+  const act=players.filter(p=>p.Status!=="Out");if(!act.length){$("statGrid").innerHTML="";return}
+  const R=p=>p.Role==="Tank / DPS"?"Tank":p.Role;const ROL=["Tank","Healer","Melee DPS","Ranged DPS"];
+  const tier=p=>{const g=+p.GS;if(!p.GS)return"No data";return g>=700?"Raid-ready (700+)":g>=550?"Decent (550–699)":g>=400?"Needs gear (400–549)":"Undergeared (<400)"};
+  const fri=act.filter(p=>!/Sat only/.test(p.Nights)),sat=act.filter(p=>!/Fri only/.test(p.Nights));
+  const need={Friday:{Tank:6,Healer:6,DPS:18},Saturday:{Tank:3,Healer:5,DPS:12}};
+  const cov=(l,n)=>{const c={Tank:l.filter(p=>R(p)==="Tank").length,Healer:l.filter(p=>R(p)==="Healer").length,DPS:l.filter(p=>/DPS/.test(R(p))).length};return Object.keys(c).map(k=>`<div class="hb"><span>${k}: have ${c[k]} / need ${need[n][k]}</span><i style="width:${Math.min(100,c[k]/need[n][k]*100)}%;${c[k]<need[n][k]?"background:#d08a2a":""}"></i><b>${c[k]>=need[n][k]?"OK":"−"+(need[n][k]-c[k])}</b></div>`).join("")};
+  const healFlex=act.filter(p=>R(p)!=="Healer"&&/resto|holy|disc/i.test(p["Dual spec"]||"")),tankFlex=act.filter(p=>R(p)!=="Tank"&&/prot|tank|bear/i.test(p["Dual spec"]||""));
+  const P=[];
+  P.push(panel("Readiness by role","Level 60 now vs still levelling (needs 60 by 9 Dec).",ROL.map(r=>{const l=act.filter(p=>R(p)===r),n60=l.filter(p=>+p.Lvl>=60),low=l.filter(p=>+p.Lvl<60);return `<div class="hb"><span>${r}: ${n60.length} of ${l.length} at 60</span><i style="width:${l.length?n60.length/l.length*100:0}%"></i><b>${low.length?"+"+low.length:"✓"}</b></div>${low.length?names(low.map(p=>({Character:p.Character+" ("+p.Lvl+")"}))):""}`}).join("")));
+  P.push(panel("Gear by tier","Armory gear score snapshot in the sheet.",barsN(grp(act,tier,["Raid-ready (700+)","Decent (550–699)","Needs gear (400–549)","Undergeared (<400)","No data"]),true)));
+  P.push(panel("Friday coverage (three 10-mans)","Players who can raid Fridays vs 3 × (2 tanks, 2 healers, 6 DPS).",cov(fri,"Friday")));
+  P.push(panel("Saturday coverage (20-man)","Players who can raid Saturdays vs 3 tanks, 5 healers, 12 DPS.",cov(sat,"Saturday")));
+  P.push(panel("Off-spec cover","Who can switch role if someone is missing.",`<div class="hb"><span>Can heal (off-spec)</span><i style="width:100%"></i><b>${healFlex.length}</b></div>${names(healFlex.map(p=>({Character:p.Character+" – "+p["Dual spec"]+(p["Flex willingness"]&&p["Flex willingness"]!=="—"?" ("+p["Flex willingness"]+")":"")})))}<div class="hb"><span>Can tank (off-spec)</span><i style="width:${healFlex.length?tankFlex.length/healFlex.length*100:0}%"></i><b>${tankFlex.length}</b></div>${names(tankFlex)}`));
+  P.push(panel("Willing to flex","Survey answer to switching role when needed.",barsN(grp(act.filter(p=>p["Flex willingness"]),"Flex willingness",["Happy to","Sometimes","Prefer to stick to main","—"]),true)));
+  P.push(panel("Raid experience","Pair first-timers and casuals with experienced raiders.",barsN(grp(act.filter(p=>p["Raid experience"]),"Raid experience",["Regular raider","Past regular raider","Casual","First time","—"]),false)+names(act.filter(p=>/First time|Casual/.test(p["Raid experience"]||"")).map(p=>({Character:p.Character+" ("+p["Raid experience"]+")"})))));
+  P.push(panel("Reliability","Survey 'availability' answer. Casual players are the most likely to miss nights.",barsN(grp(act.filter(p=>p.Availability),"Availability",["Regular","Flexible","Casual","—"]),false)+names(act.filter(p=>p.Availability==="Casual"))));
+  P.push(panel("Crafters","Enchanters and alchemists for raid consumables.",barsN(grp(act.filter(p=>/Enchanting|Alchemy/.test(p.Profession||"")),"Profession"),true)));
+  P.push(panel("Class balance","Count of each class in the roster. One Warlock and one Rogue: worth recruiting more.",barsN(grp(act,"Class"),false)));
+  P.push(panel("Night & size constraints","Plan groups around these.",[["Friday only",act.filter(p=>/Fri only/.test(p.Nights))],["Saturday only",act.filter(p=>/Sat only/.test(p.Nights))],["Prefer 10-man",act.filter(p=>String(p["Size pref"])==="10")],["Want later start (21:00+)",act.filter(p=>/^2[12]/.test(p.Start||""))]].map(([k,l])=>`<div class="hb"><span>${k}</span><i style="width:${l.length*8}%"></i><b>${l.length}</b></div>${names(l)}`).join("")));
+  P.push(panel("Raid-lead pool","Survey raid-leading experience, level 50+.",barsN(grp(act.filter(p=>+p.Lvl>=50&&/Regular|Yes|few/.test(p["Raid lead exp"]||"")),"Raid lead exp",["Regular","Yes (officer)","A few times"]),true)));
+  const sc=grp(socials,"Action",ACT);
+  P.push(panel("Guild clean-up","From the Socials tab (members who skipped the survey).",barsN(sc,false)+`<p class="lead" style="font-size:13.5px;margin:8px 0 0">Survey: 68 answers from 66 players. 2 have left the guild, 27 are under level 46, 38 are on the raid roster (plus Doclove).</p>`));
+  $("statGrid").innerHTML=P.join("");
+}
+function all(){figs();roster();leads();soc();stats();for(const a of document.querySelectorAll(".editlink")){a.hidden=!/^https:\/\//.test(L.e||"");if(!a.hidden)a.href=L.e}}
 async function load(){if(!L.r){status("");return}status("Loading the officers' sheet…");
-  try{const [r,s,p]=await Promise.all([L.r,L.s,L.p].map(u=>u?fetch(u,{cache:"no-store"}).then(x=>{if(!x.ok)throw new Error(x.status);return x.text()}):Promise.resolve("")));
+  try{const [r,s,p]=await Promise.all([["Roster",L.r],["Socials",L.s],["Plan",L.p]].map(([n,u])=>u?fetch(u,{cache:"no-store"}).then(x=>{if(!x.ok)throw new Error(n+" tab ("+x.status+")");return x.text()}).then(t=>{if(/^\s*</.test(t))throw new Error(n+" tab: that link is a web page, not a CSV link");return t}).catch(e=>{throw new Error(e.message.includes("tab")?e.message:n+" tab: "+e.message)}):Promise.resolve("")));
     players=csv(r).rows.filter(x=>x.Character);socials=s?csv(s).rows.filter(x=>x.Character):[];const pl=p?csv(p):{head:[],rows:[]};plan=[pl.head[0]==="Notes"?"":pl.head.join(","),...pl.rows.map(x=>x.Notes??Object.values(x).join(","))].join("\n").trim();
     status(players.length?"":"The Roster link loaded but has no rows. Check it's the Roster tab's CSV link.");all()}
-  catch(e){status("Couldn't load the sheet. Check the links under 'Sheet links' and that the sheet is published to the web.")}}
+  catch(e){status("Couldn't load the sheet: "+e.message+". Open 'Sheet links' and paste the published CSV link again.")}}
 ["q","fRole","fStatus"].forEach(i=>$(i).addEventListener("input",roster));$("sq").addEventListener("input",soc);
 $("chips").addEventListener("click",e=>{const b=e.target.closest("button");if(b){actF=b.dataset.a;soc()}});
 $("copyBtn").addEventListener("click",async()=>{const t=shownSoc().map(s=>s.Character).join("\n");try{await navigator.clipboard.writeText(t);$("copied").textContent=`Copied ${shownSoc().length} names.`}catch(e){$("copied").textContent="Copy was blocked by the browser."}});
 $("uR").value=L.r||"";$("uS").value=L.s||"";$("uP").value=L.p||"";$("uE").value=L.e||"";
-$("setup").addEventListener("submit",e=>{e.preventDefault();L={r:$("uR").value.trim(),s:$("uS").value.trim(),p:$("uP").value.trim(),e:$("uE").value.trim()};try{localStorage.setItem(KEY,JSON.stringify(L))}catch(err){}location.hash="roster";load()});
+$("setup").addEventListener("submit",e=>{e.preventDefault();const k=pubKey($("uAny").value)||pubKey($("uR").value)||pubKey($("uS").value)||pubKey($("uP").value);const d=k?fromKey(k):{};L={r:csvOf($("uR").value)||d.r||"",s:csvOf($("uS").value)||d.s||"",p:csvOf($("uP").value)||d.p||"",e:$("uE").value.trim()};if(!L.r){status("Paste at least one published CSV link of the Officers sheet.");return}$("uR").value=L.r;$("uS").value=L.s;$("uP").value=L.p;$("uAny").value="";try{localStorage.setItem(KEY,JSON.stringify(L))}catch(err){}location.hash="roster";load()});
 $("forget").addEventListener("click",()=>{try{localStorage.removeItem(KEY)}catch(e){}L={};players=[];socials=[];plan="";["uR","uS","uP","uE"].forEach(i=>$(i).value="");all();status("Links removed from this browser.")});
+{const m=location.hash.match(/^#k=(2PACX-[A-Za-z0-9_-]+)/);if(m){L={...fromKey(m[1]),e:L.e||""};try{localStorage.setItem(KEY,JSON.stringify(L))}catch(err){}history.replaceState(null,"",location.pathname+"#roster");$("uR").value=L.r;$("uS").value=L.s;$("uP").value=L.p}}
 window.addEventListener("hashchange",view);view();all();load();
 }
 </script>
