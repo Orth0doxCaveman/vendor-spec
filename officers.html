@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Vendor Spec officer hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#131110);--ink:light-dark(#1c1817,#eee8e3);--mute:light-dark(#6a605b,#a69c95);--line:light-dark(#e7e1dd,#2d2725);--card:light-dark(#f6f3f1,#1c1716);--iron:#262120;--red:#a3231c;--red2:light-dark(#8e1d17,#d0473b);--warn:light-dark(#9a5a00,#f0b25a)}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Inter,system-ui,sans-serif;overflow-x:clip}
+h1,h2{font-family:Cinzel,Georgia,serif;font-weight:700;line-height:1.05;margin:0;text-wrap:balance}
+.band{padding:clamp(24px,3.5vw,52px) max(5vw,16px)}
+.wrap{max-width:1240px;margin:0 auto}
+.top{background:var(--iron);color:#f3ece6;border-bottom:4px solid var(--red)}
+h1{font-size:clamp(30px,4.6vw,48px)}
+.sub{margin:8px 0 0;color:#cfc5be;max-width:70ch}.sub a{color:#ffb3a8}
+.figs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:10px;margin-top:22px}
+.fig2{border-top:1px solid #4a403d;padding-top:10px}
+.fig2 b{display:block;font-family:Cinzel,serif;font-size:clamp(26px,3vw,34px);line-height:1}
+.fig2 span{font-size:13.5px;color:#cfc5be}
+.bar{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding:10px max(5vw,16px);max-width:1240px;margin:0 auto}
+.tabs a{flex:none;text-decoration:none;color:var(--ink);padding:0 16px;border-radius:999px;border:1px solid var(--line);font-weight:600;font-size:15px;min-height:44px;display:flex;align-items:center}
+.tabs a[aria-current=page]{background:var(--ink);color:var(--bg)}
+h2{font-size:clamp(24px,3vw,34px);margin-bottom:6px}
+.lead{color:var(--mute);margin:0 0 16px;max-width:75ch}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;align-items:center}
+input,select,textarea{font:inherit;font-size:16px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);min-height:44px}
+input:focus-visible,select:focus-visible,.btn:focus-visible,.tabs a:focus-visible{outline:3px solid #e07a5f;outline-offset:2px}
+.btn{font:inherit;font-weight:600;font-size:15px;min-height:44px;padding:0 16px;border-radius:8px;border:1px solid var(--red);background:var(--red);color:#fff;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+.btn.ghost{background:var(--card);color:var(--ink);border-color:var(--line)}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th{text-align:left;font-weight:600;color:var(--mute);font-size:13px;padding:8px;border-bottom:2px solid var(--line);white-space:nowrap}
+td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td .nm{font-weight:600;border-left:4px solid var(--c,#999);padding-left:8px;display:block;white-space:nowrap}
+td small{display:block;color:var(--mute);font-size:12.5px;padding-left:12px}
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:12.5px;font-weight:600;white-space:nowrap;background:var(--card);border:1px solid var(--line)}
+.g-r{color:light-dark(#1d6b33,#7fd69a)}.g-d{color:light-dark(#3d5a99,#9fb6ee)}.g-n{color:var(--warn)}.g-u{color:var(--red2)}
+.off{color:var(--red2);font-size:12px;font-weight:600}
+.note{padding:12px 14px;border-radius:10px;background:var(--card);border:1px solid var(--line);color:var(--mute);margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
+@media(max-width:820px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.panel h3{margin:0 0 10px;font-size:16px}
+.hb{display:grid;grid-template-columns:7.5em minmax(0,1fr) 2.5em;gap:8px;align-items:center;font-size:14.5px;margin:6px 0}
+.hb i{display:block;height:14px;border-radius:4px;background:var(--red)}
+.hb b{text-align:right;font-variant-numeric:tabular-nums}
+ul.rl{list-style:none;margin:0;padding:0}ul.rl li{padding:9px 0;border-bottom:1px solid var(--line)}ul.rl li b{display:block}ul.rl li span{color:var(--mute);font-size:14px}
+pre.plan{white-space:pre-wrap;font:14.5px/1.55 Inter,system-ui,sans-serif;margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.chips button{font:inherit;font-size:14px;min-height:40px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.chips button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+form.setup{display:grid;gap:12px;max-width:760px}
+form.setup label{display:grid;gap:4px;font-size:14px;color:var(--mute)}
+[hidden]{display:none!important}
+@media(max-width:600px){table{font-size:13px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px;border-bottom:1px solid var(--line)}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:8em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:7.5em;margin-inline-start:-8em;white-space:normal;color:var(--mute)}.stack td:empty{display:none}td .nm{white-space:normal}}
+</style>
+<script>new MutationObserver(()=>{for(const c of document.querySelectorAll('.stack td:not([data-l])')){let i=0,p=c;while(p=p.previousElementSibling)i+=p.colSpan;c.dataset.l=c.closest('table').rows[0].cells[i]?.textContent||''}}).observe(document,{childList:true,subtree:true})</script>
+</head>
+<body>
+<header class="band top"><div class="wrap">
+  <h1>Vendor Spec officer hub</h1>
+  <p class="sub">Read-only view of the officers' Google Sheet. Make changes in the sheet and this page picks them up. Members use the <a href="./">raid groups page</a>.</p>
+  <div class="figs" id="figs"></div>
+</div></header>
+<nav class="bar" aria-label="Sections"><div class="tabs" id="tabs">
+  <a href="#roster">Roster</a><a href="#leads">Raid leads &amp; times</a><a href="#socials">Socials list</a><a href="#setup">Sheet links</a>
+</div></nav>
+<main class="band"><div class="wrap">
+  <div id="status" class="note" hidden></div>
+
+  <section id="v-setup" hidden>
+    <h2>Connect the officers' sheet</h2>
+    <p class="lead">Paste the "Publish to web" CSV link of each tab of the private officers' sheet. They're saved only in this browser, never in the website's code. Get them from an officer.</p>
+    <form class="setup" id="setup">
+      <label>Roster tab CSV link <input id="uR" type="url" placeholder="https://docs.google.com/spreadsheets/d/e/…/pub?gid=…&single=true&output=csv"></label>
+      <label>Socials tab CSV link <input id="uS" type="url"></label>
+      <label>Plan tab CSV link <input id="uP" type="url"></label>
+      <label>Sheet edit link (optional, adds an "Edit in Google Sheets" button) <input id="uE" type="url"></label>
+      <div class="filters"><button class="btn" type="submit">Save and load</button><button class="btn ghost" type="button" id="forget">Forget links on this device</button></div>
+    </form>
+  </section>
+
+  <section id="v-roster" hidden>
+    <h2>Raid roster</h2>
+    <p class="lead">Everyone who did the survey and can be 50+ by 9 December. Gear score is the armory snapshot in the sheet.</p>
+    <div class="filters">
+      <input id="q" type="search" placeholder="Search name" aria-label="Search name">
+      <select id="fRole" aria-label="Role"><option value="">All roles</option></select>
+      <select id="fStatus" aria-label="Status"><option value="">All statuses</option></select>
+      <a class="btn ghost editlink" hidden target="_blank" rel="noopener">Edit in Google Sheets</a>
+    </div>
+    <div class="scroll"><table class="stack" id="rt"><thead><tr><th>Player</th><th>Status</th><th>Role</th><th>Lvl</th><th>GS</th><th>Main spec</th><th>Dual spec</th><th>Nights</th><th>Start</th><th>Raid lead exp.</th><th>Notes</th></tr></thead><tbody></tbody></table></div>
+  </section>
+
+  <section id="v-leads" hidden>
+    <h2>Raid leads &amp; times</h2>
+    <p class="lead">Counted from the roster. The plan is the Plan tab of the sheet.</p>
+    <div class="grid2">
+      <div class="panel"><h3>Raid-lead candidates (level 50+)</h3><ul class="rl" id="rl"></ul></div>
+      <div>
+        <div class="panel" style="margin-bottom:22px"><h3>Preferred start time (GMT)</h3><div id="times"></div></div>
+        <div class="panel" style="margin-bottom:22px"><h3>Nights they can raid</h3><div id="nights"></div></div>
+        <div class="panel"><h3>Plan</h3><pre class="plan" id="plan"></pre></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="v-socials" hidden>
+    <h2>Didn't do the survey</h2>
+    <p class="lead">Guild members with no survey answer (Doclove left out). Same-name alts of people who answered, and rank-2 officer alts, are marked to keep. Alts with unrelated names can't be spotted automatically.</p>
+    <div class="chips" id="chips"></div>
+    <div class="filters"><input id="sq" type="search" placeholder="Search name" aria-label="Search socials"><button class="btn" id="copyBtn" type="button">Copy names shown</button><span class="lead" id="copied" style="margin:0"></span></div>
+    <div class="scroll"><table class="stack" id="st"><thead><tr><th>Character</th><th>Lvl</th><th>Class</th><th>Guild rank</th><th>Action</th><th>Note</th></tr></thead><tbody></tbody></table></div>
+  </section>
+</div></main>
+<script>
+{
+const CC={Warrior:"#C69B6D",Paladin:"#F48CBA",Hunter:"#AAD372",Rogue:"#E8D84A",Priest:"#B8B8B8",Shaman:"#0070DD",Mage:"#3FC7EB",Warlock:"#8788EE",Druid:"#FF7C0A"};
+const ROLES=["Tank","Tank / DPS","Healer","Melee DPS","Ranged DPS"],STAT=["Core","Confirm","Stretch","Out"],ACT=["Make social","Chase survey","Keep (alt)","Keep (officer alt)","Done"];
+const RLW={"Regular":3,"Yes (officer)":3,"A few times":1};
+const STAFF=p=>{const r=p["Guild rank"]||p.Officer||"";return ["Guild Master","Officer","Raid Leader","Recruiter"].includes(r)?r:""};
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const $=id=>document.getElementById(id);
+const opts=a=>a.map(x=>`<option>${esc(x)}</option>`).join("");
+function csv(t){const out=[];let row=[],f="",q=false;for(let i=0;i<t.length;i++){const c=t[i];if(q){if(c==='"'){if(t[i+1]==='"'){f+='"';i++}else q=false}else f+=c}else if(c==='"')q=true;else if(c===','){row.push(f);f=""}else if(c==='\n'){row.push(f);out.push(row);row=[];f=""}else if(c!=='\r')f+=c}if(f!==""||row.length){row.push(f);out.push(row)}const h=(out.shift()||[]).map(s=>s.trim());return {head:h,rows:out.map(r=>Object.fromEntries(h.map((k,i)=>[k,(r[i]??"").trim()])))}}
+const KEY="vs-officer-links";
+let L={};try{L=JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){}
+let players=[],socials=[],plan="",actF="";
+$("fRole").innerHTML+=opts(ROLES);$("fStatus").innerHTML+=opts(STAT);
+function status(t){$("status").hidden=!t;$("status").textContent=t||""}
+const num=v=>v===""||v==null?null:+v;
+function gear(g){g=num(g);if(g==null||isNaN(g))return`<span class="pill g-u">No data</span>`;const c=g>=700?"g-r":g>=550?"g-d":g>=400?"g-n":"g-u";return`<span class="pill ${c}">${g}</span>`}
+function view(){const h=location.hash.slice(1)||(L.r?"roster":"setup");for(const v of["setup","roster","leads","socials"])$("v-"+v).hidden=v!==h;for(const a of $("tabs").children){if(a.getAttribute("href")==="#"+h)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")}}
+function figs(){const act=players.filter(p=>p.Status!=="Out"),c=r=>act.filter(p=>p.Role===r||(r==="Tank"&&p.Role==="Tank / DPS")).length;
+  $("figs").innerHTML=players.length?[[act.filter(p=>p.Status==="Core").length,"core raiders"],[c("Tank"),"tanks"],[c("Healer"),"healers"],[c("Melee DPS")+c("Ranged DPS"),"DPS"],[act.filter(p=>+p.Lvl<60).length,"still levelling"],[socials.filter(s=>s.Action==="Make social").length,"to make socials"]].map(([n,l])=>`<div class="fig2"><b>${n}</b><span>${l}</span></div>`).join(""):""}
+function roster(){const q=$("q").value.toLowerCase(),r=$("fRole").value,s=$("fStatus").value;
+  const rows=players.filter(p=>(!q||p.Character.toLowerCase().includes(q))&&(!r||p.Role===r)&&(!s||p.Status===s)).sort((a,b)=>ROLES.indexOf(a.Role)-ROLES.indexOf(b.Role)||b.Lvl-a.Lvl||a.Character.localeCompare(b.Character));
+  $("rt").tBodies[0].innerHTML=rows.map(p=>`<tr><td><span class="nm" style="--c:${CC[p.Class]||"#999"}">${esc(p.Character)}</span><small>${esc(p.Class)}${STAFF(p)?` · <span class="off">${esc(STAFF(p))}</span>`:""}</small></td><td>${esc(p.Status)}</td><td>${esc(p.Role)}</td><td class="num">${esc(p.Lvl)}</td><td class="num">${gear(p.GS)}</td><td>${esc(p["Main spec"])}<small>${esc(p["Armory talents"])}</small></td><td>${esc(p["Dual spec"])}</td><td>${esc(p.Nights)}</td><td>${esc(p.Start)}</td><td>${esc(p["Raid lead exp"])}</td><td>${esc(p.Notes)}</td></tr>`).join("")||`<tr><td colspan="11">No one matches.</td></tr>`}
+function bars(el,pairs){const m=Math.max(1,...pairs.map(p=>p[1]));el.innerHTML=pairs.map(([k,n])=>`<div class="hb"><span>${esc(k)}</span><i style="width:${n/m*100}%"></i><b>${n}</b></div>`).join("")}
+function leads(){const act=players.filter(p=>p.Status!=="Out"),t={},n={};
+  for(const p of act){t[p.Start||"?"]=(t[p.Start||"?"]||0)+1;n[p.Nights||"?"]=(n[p.Nights||"?"]||0)+1}
+  bars($("times"),Object.entries(t).sort((a,b)=>b[1]-a[1]).map(([k,v])=>[k==="Any"?"Any time":k,v]));
+  bars($("nights"),Object.entries(n).sort((a,b)=>b[1]-a[1]).map(([k,v])=>[k.replace("Fri+Sat+","Fri, Sat + more").replace("Fri+Sat","Fri + Sat"),v]));
+  $("rl").innerHTML=act.filter(p=>+p.Lvl>=50&&RLW[p["Raid lead exp"]]).sort((a,b)=>RLW[b["Raid lead exp"]]-RLW[a["Raid lead exp"]]||(+b.GS||0)-(+a.GS||0)).map(p=>`<li><b>${esc(p.Character)} ${STAFF(p)?`<span class="off">${esc(STAFF(p))}</span>`:""}</b><span>${esc(p["Raid lead exp"])} · ${esc(p.Role)} · lvl ${esc(p.Lvl)} · ${esc(p.Nights)} from ${esc(p.Start)}</span></li>`).join("");
+  $("plan").textContent=plan}
+function shownSoc(){const q=$("sq").value.toLowerCase();return socials.filter(s=>(!actF||s.Action===actF)&&(!q||s.Character.toLowerCase().includes(q))).sort((a,b)=>ACT.indexOf(a.Action)-ACT.indexOf(b.Action)||b.Lvl-a.Lvl||a.Character.localeCompare(b.Character))}
+function soc(){const c={};for(const s of socials)c[s.Action]=(c[s.Action]||0)+1;
+  $("chips").innerHTML=[["","All",socials.length],...ACT.map(a=>[a,a,c[a]||0])].map(([v,l,n])=>`<button type="button" data-a="${esc(v)}" aria-pressed="${v===actF}">${esc(l)} (${n})</button>`).join("");
+  $("st").tBodies[0].innerHTML=shownSoc().map(s=>`<tr><td><span class="nm" style="--c:${CC[s.Class]||"#999"}">${esc(s.Character)}</span></td><td class="num">${esc(s.Lvl)}</td><td>${esc(s.Class)}</td><td>${esc(s["Guild rank"]||s.Rank)}</td><td>${esc(s.Action)}</td><td>${esc(s.Note)}</td></tr>`).join("")||`<tr><td colspan="6">No one here.</td></tr>`}
+function all(){figs();roster();leads();soc();for(const a of document.querySelectorAll(".editlink")){a.hidden=!/^https:\/\//.test(L.e||"");if(!a.hidden)a.href=L.e}}
+async function load(){if(!L.r){status("");return}status("Loading the officers' sheet…");
+  try{const [r,s,p]=await Promise.all([L.r,L.s,L.p].map(u=>u?fetch(u,{cache:"no-store"}).then(x=>{if(!x.ok)throw new Error(x.status);return x.text()}):Promise.resolve("")));
+    players=csv(r).rows.filter(x=>x.Character);socials=s?csv(s).rows.filter(x=>x.Character):[];const pl=p?csv(p):{head:[],rows:[]};plan=[pl.head[0]==="Notes"?"":pl.head.join(","),...pl.rows.map(x=>x.Notes??Object.values(x).join(","))].join("\n").trim();
+    status(players.length?"":"The Roster link loaded but has no rows. Check it's the Roster tab's CSV link.");all()}
+  catch(e){status("Couldn't load the sheet. Check the links under 'Sheet links' and that the sheet is published to the web.")}}
+["q","fRole","fStatus"].forEach(i=>$(i).addEventListener("input",roster));$("sq").addEventListener("input",soc);
+$("chips").addEventListener("click",e=>{const b=e.target.closest("button");if(b){actF=b.dataset.a;soc()}});
+$("copyBtn").addEventListener("click",async()=>{const t=shownSoc().map(s=>s.Character).join("\n");try{await navigator.clipboard.writeText(t);$("copied").textContent=`Copied ${shownSoc().length} names.`}catch(e){$("copied").textContent="Copy was blocked by the browser."}});
+$("uR").value=L.r||"";$("uS").value=L.s||"";$("uP").value=L.p||"";$("uE").value=L.e||"";
+$("setup").addEventListener("submit",e=>{e.preventDefault();L={r:$("uR").value.trim(),s:$("uS").value.trim(),p:$("uP").value.trim(),e:$("uE").value.trim()};try{localStorage.setItem(KEY,JSON.stringify(L))}catch(err){}location.hash="roster";load()});
+$("forget").addEventListener("click",()=>{try{localStorage.removeItem(KEY)}catch(e){}L={};players=[];socials=[];plan="";["uR","uS","uP","uE"].forEach(i=>$(i).value="");all();status("Links removed from this browser.")});
+window.addEventListener("hashchange",view);view();all();load();
+}
+</script>
+</body>
+</html>
