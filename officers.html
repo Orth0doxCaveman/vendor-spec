@@ -143,7 +143,7 @@ $("fRole").innerHTML+=opts(ROLES);$("fStatus").innerHTML+=opts(STAT);
 function status(t){$("status").hidden=!t;$("status").textContent=t||""}
 const num=v=>v===""||v==null?null:+v;
 function gear(g){g=num(g);if(g==null||isNaN(g))return`<span class="pill g-u">No data</span>`;const c=g>=700?"g-r":g>=550?"g-d":g>=400?"g-n":"g-u";return`<span class="pill ${c}">${g}</span>`}
-function view(){const h=location.hash.slice(1)||(L.r?"roster":"setup");for(const v of["setup","roster","leads","socials","stats"])$("v-"+v).hidden=v!==h;for(const a of $("tabs").children){if(a.getAttribute("href")==="#"+h)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")}}
+function view(){let h=location.hash.slice(1)||"roster";if(!L.r)h="setup";for(const v of["setup","roster","leads","socials","stats"])$("v-"+v).hidden=v!==h;for(const a of $("tabs").children){if(a.getAttribute("href")==="#"+h)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")}}
 function figs(){const act=players.filter(p=>p.Status!=="Out"),c=r=>act.filter(p=>p.Role===r||(r==="Tank"&&p.Role==="Tank / DPS")).length;
   $("figs").innerHTML=players.length?[[act.filter(p=>p.Status==="Core").length,"core raiders"],[c("Tank"),"tanks"],[c("Healer"),"healers"],[c("Melee DPS")+c("Ranged DPS"),"DPS"],[act.filter(p=>+p.Lvl<60).length,"still levelling"],[socials.filter(s=>s.Action==="Make social").length,"to make socials"]].map(([n,l])=>`<div class="fig2"><b>${n}</b><span>${l}</span></div>`).join(""):""}
 function roster(){const q=$("q").value.toLowerCase(),r=$("fRole").value,s=$("fStatus").value;
@@ -194,7 +194,7 @@ function stats(){
   $("statGrid").innerHTML=P.join("");
 }
 function all(){figs();roster();leads();soc();stats();for(const a of document.querySelectorAll(".editlink")){a.hidden=!/^https:\/\//.test(L.e||"");if(!a.hidden)a.href=L.e}}
-async function load(){if(!L.r){status("");return}status("Loading the officers' sheet…");
+async function load(){if(!L.r){status("Not connected to the officers' sheet on this device yet. Open the setup link an officer sent you, or paste one published CSV link of the Officers sheet in the Quick setup box below.");return}status("Loading the officers' sheet…");
   try{const [r,s,p]=await Promise.all([["Roster",L.r],["Socials",L.s],["Plan",L.p]].map(([n,u])=>u?fetch(u,{cache:"no-store"}).then(x=>{if(!x.ok)throw new Error(n+" tab ("+x.status+")");return x.text()}).then(t=>{if(/^\s*</.test(t))throw new Error(n+" tab: that link is a web page, not a CSV link");return t}).catch(e=>{throw new Error(e.message.includes("tab")?e.message:n+" tab: "+e.message)}):Promise.resolve("")));
     players=csv(r).rows.filter(x=>x.Character);socials=s?csv(s).rows.filter(x=>x.Character):[];const pl=p?csv(p):{head:[],rows:[]};plan=[pl.head[0]==="Notes"?"":pl.head.join(","),...pl.rows.map(x=>x.Notes??Object.values(x).join(","))].join("\n").trim();
     status(players.length?"":"The Roster link loaded but has no rows. Check it's the Roster tab's CSV link.");all()}
